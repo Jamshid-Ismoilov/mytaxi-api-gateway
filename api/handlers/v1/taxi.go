@@ -321,3 +321,166 @@ func (h *handlerV1) DeleteClient(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+
+
+// CreateOrder ...
+// @Summary CreateOrder
+// @Description This API for creating a new order
+// @Tags order
+// @Accept  json
+// @Produce  json
+// @Param Client request body models.CreateOrder true "clientCreateRequest"
+// @Success 200 {object} models.FullOrder
+// @Failure 400 {object} models.StandardErrorModel
+// @Failure 500 {object} models.StandardErrorModel
+// @Router /v1/orders/ [post]
+func (h *handlerV1) CreateOrder(c *gin.Context) {
+	var (
+		body        pb.Order
+		jspbMarshal protojson.MarshalOptions
+	)
+	jspbMarshal.UseProtoNames = true
+
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to bind json", l.Error(err))
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
+	defer cancel()
+
+	response, err := h.serviceManager.TaxiService().CreateOrder(ctx, &body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to create driver", l.Error(err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, response)
+}
+
+// GetOrder ...
+// @Summary GetOrder
+// @Description This API for getting order detail
+// @Tags order
+// @Accept  json
+// @Produce  json
+// @Param id path string true "ID"
+// @Success 200 {object} models.FullOrder
+// @Failure 400 {object} models.StandardErrorModel
+// @Failure 500 {object} models.StandardErrorModel
+// @Router /v1/orders/{id} [get]
+func (h *handlerV1) GetOrder(c *gin.Context) {
+	var jspbMarshal protojson.MarshalOptions
+	jspbMarshal.UseProtoNames = true
+
+	guid := c.Param("id")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
+	defer cancel()
+
+	response, err := h.serviceManager.TaxiService().GetClient(
+		ctx, &pb.ByIdReq{
+			Id: guid,
+		})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to get user", l.Error(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdateOrder ...
+// @Summary UpdateOrder
+// @Description This API for updating order
+// @Tags order
+// @Accept  json
+// @Produce  json
+// @Param id path string true "ID"
+// @Param Order request body models.UpdateOrder true "orderUpdateRequest"
+// @Success 200 {object} models.FullOrder
+// @Failure 400 {object} models.StandardErrorModel
+// @Failure 500 {object} models.StandardErrorModel
+// @Router /v1/orders/{id} [put]
+func (h *handlerV1) UpdateOrder(c *gin.Context) {
+	var (
+		body        pb.Order
+		jspbMarshal protojson.MarshalOptions
+	)
+	jspbMarshal.UseProtoNames = true
+
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to bind json", l.Error(err))
+		return
+	}
+	body.Id = c.Param("id")
+
+	if body.Status != "accepted" && body.Status != "cancelled" && body.Status != "finished" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("cannot change standart status variables", l.Error(err))
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
+	defer cancel()
+
+	response, err := h.serviceManager.TaxiService().UpdateOrder(ctx, &body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to update user", l.Error(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// DeleteOrder ...
+// @Summary DeleteOrder
+// @Description This API for deleting order
+// @Tags order
+// @Accept  json
+// @Produce  json
+// @Param id path string true "ID"
+// @Success 200
+// @Failure 400 {object} models.StandardErrorModel
+// @Failure 500 {object} models.StandardErrorModel
+// @Router /v1/orders/{id} [delete]
+func (h *handlerV1) DeleteClient(c *gin.Context) {
+	var jspbMarshal protojson.MarshalOptions
+	jspbMarshal.UseProtoNames = true
+
+	guid := c.Param("id")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
+	defer cancel()
+
+	response, err := h.serviceManager.TaxiService().DeleteClient(
+		ctx, &pb.ByIdReq{
+			Id: guid,
+		})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to delete user", l.Error(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
