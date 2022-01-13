@@ -8,7 +8,7 @@ import (
 type QueryParams struct {
 	Filters  map[string]string
 	Page     int64
-	Limit    int64	
+	Limit    int64
 	From     string
 	To       string
 	Ordering []string
@@ -21,7 +21,7 @@ func ParseQueryParams(queryParams map[string][]string) (*QueryParams, []string) 
 		Page:     1,
 		Limit:    10,
 		From:     "",
-		To:    "",
+		To:       "",
 		Ordering: []string{},
 		Search:   "",
 	}

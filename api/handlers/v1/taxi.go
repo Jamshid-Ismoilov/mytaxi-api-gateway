@@ -167,8 +167,6 @@ func (h *handlerV1) DeleteDriver(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-
-
 // CreateClient ...
 // @Summary CreateClient
 // @Description This API for creating a new client
@@ -321,8 +319,6 @@ func (h *handlerV1) DeleteClient(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
-
-
 
 // CreateOrder ...
 // @Summary CreateOrder
@@ -487,7 +483,6 @@ func (h *handlerV1) DeleteOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-
 // ListOrders ...
 // @Summary ListOrders
 // @Description This API for getting list of orders
@@ -525,10 +520,10 @@ func (h *handlerV1) ListOrders(c *gin.Context) {
 	response, err := h.serviceManager.TaxiService().ListOrder(
 		ctx, &pb.ListReq{
 			ClientId: clientId,
-			Limit: params.Limit,
-			Page:  params.Page,
-			From: params.From,
-			To:  params.To,
+			Limit:    params.Limit,
+			Page:     params.Page,
+			From:     params.From,
+			To:       params.To,
 		})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
