@@ -37,12 +37,17 @@ type Order struct {
 	ClientId             int64    `json:"clientId"`
 }
 
+type ListOrders struct {
+	Orders []Order  `json:"orders"`
+	Count  int64     `json:"count"`
+}
+
 type UpdateOrder struct {
 	Status               string   `json:"status"`
 }
 
 type CreateOrder struct {
 	Status               string   `json:"status"`
-	DriverId             int64    `json:"driverId"`
-	ClientId             int64    `json:"clientId"`
+	DriverId             string    `json:"driverId"`
+	ClientId             string    `json:"clientId"`
 }

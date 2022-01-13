@@ -8,7 +8,9 @@ import (
 type QueryParams struct {
 	Filters  map[string]string
 	Page     int64
-	Limit    int64
+	Limit    int64	
+	From     string
+	To       string
 	Ordering []string
 	Search   string
 }
@@ -18,6 +20,8 @@ func ParseQueryParams(queryParams map[string][]string) (*QueryParams, []string) 
 		Filters:  make(map[string]string),
 		Page:     1,
 		Limit:    10,
+		From:     "",
+		To:    "",
 		Ordering: []string{},
 		Search:   "",
 	}

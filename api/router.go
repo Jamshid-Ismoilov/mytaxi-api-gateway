@@ -43,6 +43,12 @@ func New(option Option) *gin.Engine {
 	api.PUT("/clients/:id", handlerV1.UpdateClient)
 	api.DELETE("/clients/:id", handlerV1.DeleteClient)
 
+	api.POST("/orders", handlerV1.CreateOrder)
+	api.GET("/order/:id", handlerV1.GetOrder)
+	api.GET("/orders/:clientId", handlerV1.ListOrders)
+	api.PUT("/orders/:id", handlerV1.UpdateOrder)
+	api.DELETE("/orders/:id", handlerV1.DeleteOrder)
+
 	url := ginSwagger.URL("swagger/doc.json") // The url pointing to API definition
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 

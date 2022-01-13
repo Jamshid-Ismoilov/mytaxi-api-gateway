@@ -11,7 +11,7 @@ import (
 	_ "github.com/Jamshid-Ismoilov/mytaxi-api-gateway/api/handlers/models"
 	pb "github.com/Jamshid-Ismoilov/mytaxi-api-gateway/genproto"
 	l "github.com/Jamshid-Ismoilov/mytaxi-api-gateway/pkg/logger"
-	// "github.com/Jamshid-Ismoilov/mytaxi-api-gateway/pkg/utils"
+	"github.com/Jamshid-Ismoilov/mytaxi-api-gateway/pkg/utils"
 )
 
 // CreateDriver ...
@@ -350,6 +350,8 @@ func (h *handlerV1) CreateOrder(c *gin.Context) {
 		h.log.Error("failed to bind json", l.Error(err))
 		return
 	}
+
+	body.Status = "created"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
 	defer cancel()
 
@@ -375,7 +377,7 @@ func (h *handlerV1) CreateOrder(c *gin.Context) {
 // @Success 200 {object} models.FullOrder
 // @Failure 400 {object} models.StandardErrorModel
 // @Failure 500 {object} models.StandardErrorModel
-// @Router /v1/orders/{id} [get]
+// @Router /v1/order/{id} [get]
 func (h *handlerV1) GetOrder(c *gin.Context) {
 	var jspbMarshal protojson.MarshalOptions
 	jspbMarshal.UseProtoNames = true
@@ -384,7 +386,7 @@ func (h *handlerV1) GetOrder(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
 	defer cancel()
 
-	response, err := h.serviceManager.TaxiService().GetClient(
+	response, err := h.serviceManager.TaxiService().GetOrder(
 		ctx, &pb.ByIdReq{
 			Id: guid,
 		})
@@ -462,7 +464,7 @@ func (h *handlerV1) UpdateOrder(c *gin.Context) {
 // @Failure 400 {object} models.StandardErrorModel
 // @Failure 500 {object} models.StandardErrorModel
 // @Router /v1/orders/{id} [delete]
-func (h *handlerV1) DeleteClient(c *gin.Context) {
+func (h *handlerV1) DeleteOrder(c *gin.Context) {
 	var jspbMarshal protojson.MarshalOptions
 	jspbMarshal.UseProtoNames = true
 
@@ -470,7 +472,7 @@ func (h *handlerV1) DeleteClient(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
 	defer cancel()
 
-	response, err := h.serviceManager.TaxiService().DeleteClient(
+	response, err := h.serviceManager.TaxiService().DeleteOrder(
 		ctx, &pb.ByIdReq{
 			Id: guid,
 		})
@@ -479,6 +481,60 @@ func (h *handlerV1) DeleteClient(c *gin.Context) {
 			"error": err.Error(),
 		})
 		h.log.Error("failed to delete user", l.Error(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+
+// ListOrders ...
+// @Summary ListOrders
+// @Description This API for getting list of orders
+// @Tags order
+// @Accept  json
+// @Produce  json
+// @Param clientId path string true "ClientID"
+// @Param page query string false "Page"
+// @Param limit query string false "Limit"
+// @Param from query string false "from"
+// @Param to query string false "to"
+// @Success 200 {object} models.ListOrders
+// @Failure 400 {object} models.StandardErrorModel
+// @Failure 500 {object} models.StandardErrorModel
+// @Router /v1/orders/{clientId} [get]
+func (h *handlerV1) ListOrders(c *gin.Context) {
+	queryParams := c.Request.URL.Query()
+
+	clientId := c.Param("clientId")
+	params, errStr := utils.ParseQueryParams(queryParams)
+	if errStr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": errStr[0],
+		})
+		h.log.Error("failed to parse query params json" + errStr[0])
+		return
+	}
+
+	var jspbMarshal protojson.MarshalOptions
+	jspbMarshal.UseProtoNames = true
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(h.cfg.CtxTimeout))
+	defer cancel()
+
+	response, err := h.serviceManager.TaxiService().ListOrder(
+		ctx, &pb.ListReq{
+			ClientId: clientId,
+			Limit: params.Limit,
+			Page:  params.Page,
+			From: params.From,
+			To:  params.To,
+		})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		h.log.Error("failed to list users", l.Error(err))
 		return
 	}
 

@@ -22,6 +22,15 @@ definitions:
       phone:
         type: string
     type: object
+  models.CreateOrder:
+    properties:
+      clientId:
+        type: string
+      driverId:
+        type: string
+      status:
+        type: string
+    type: object
   models.Driver:
     properties:
       fullname:
@@ -36,10 +45,46 @@ definitions:
       message:
         type: string
     type: object
+  models.FullOrder:
+    properties:
+      client:
+        $ref: '#/definitions/models.Client'
+      driver:
+        $ref: '#/definitions/models.Driver'
+      id:
+        type: string
+      status:
+        type: string
+    type: object
+  models.ListOrders:
+    properties:
+      count:
+        type: integer
+      orders:
+        items:
+          $ref: '#/definitions/models.Order'
+        type: array
+    type: object
+  models.Order:
+    properties:
+      clientId:
+        type: integer
+      driverId:
+        type: integer
+      id:
+        type: string
+      status:
+        type: string
+    type: object
   models.StandardErrorModel:
     properties:
       error:
         $ref: '#/definitions/models.Error'
+    type: object
+  models.UpdateOrder:
+    properties:
+      status:
+        type: string
     type: object
 info:
   contact: {}
@@ -282,4 +327,169 @@ paths:
       summary: UpdateDriver
       tags:
       - driver
+  /v1/order/{id}:
+    get:
+      consumes:
+      - application/json
+      description: This API for getting order detail
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FullOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+      summary: GetOrder
+      tags:
+      - order
+  /v1/orders/:
+    post:
+      consumes:
+      - application/json
+      description: This API for creating a new order
+      parameters:
+      - description: clientCreateRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FullOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+      summary: CreateOrder
+      tags:
+      - order
+  /v1/orders/{clientId}:
+    get:
+      consumes:
+      - application/json
+      description: This API for getting list of orders
+      parameters:
+      - description: ClientID
+        in: path
+        name: clientId
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: string
+      - description: from
+        in: query
+        name: from
+        type: string
+      - description: to
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ListOrders'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+      summary: ListOrders
+      tags:
+      - order
+  /v1/orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: This API for deleting order
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+      summary: DeleteOrder
+      tags:
+      - order
+    put:
+      consumes:
+      - application/json
+      description: This API for updating order
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: orderUpdateRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FullOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardErrorModel'
+      summary: UpdateOrder
+      tags:
+      - order
 swagger: "2.0"
